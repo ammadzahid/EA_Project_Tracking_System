@@ -182,6 +182,3 @@ EA_Project_Tracking_System/
 - **Secure Storage**: Files are stored outside the public directory and accessed via a PHP proxy.
 
 ---
-
-## 📄 License
-This project is licensed under the **MIT License**.
