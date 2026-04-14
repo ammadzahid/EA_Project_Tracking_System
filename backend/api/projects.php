@@ -103,6 +103,8 @@ function createProject($user) {
     $city = trim($_POST['city'] ?? '');
     $budget = floatval($_POST['budget'] ?? 0);
     $capacity = trim($_POST['capacity'] ?? '');
+    $phoneNumber = trim($_POST['phoneNumber'] ?? '');   
+    $pinLocation = trim($_POST['pinLocation'] ?? '');
     $projectType = $_POST['projectType'] ?? 'Residential';
     $deadline = $_POST['deadline'] ?? '';
     $description = trim($_POST['description'] ?? '');
@@ -172,11 +174,9 @@ function createProject($user) {
     }
 
     // Insert project
-    $stmt = $db->prepare("
-        INSERT INTO projects (uid, name, location, city, budget, capacity, project_type, deadline, description, status, created_by) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'new', ?)
-    ");
-    $stmt->execute([$projectUid, $name, $location, $city, $budget, $capacity, $projectType, $deadline, $description, $user['uid']]);
+    $stmt = $db->prepare("INSERT INTO projects (uid, name, location, city, budget, capacity, project_type, deadline, description, phone_number, pin_location, status, created_by) 
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'new', ?)");
+    $stmt->execute([$projectUid, $name, $location, $city, $budget, $capacity, $projectType, $deadline, $description, $phoneNumber, $pinLocation, $user['uid']]);
 
     // Create 16 steps (7 main + Execution parent + 8 sub-steps)
     $steps = [
@@ -414,7 +414,9 @@ function rejectByLeader($user) {
     $reason = $data['reason'] ?? 'Not feasible';
 
     $db = getDB();
-    $stmt = $db->prepare("UPDATE projects SET status = 'rejected', rejected_reason = ? WHERE uid = ? AND assigned_leader = ? AND status = 'assigned'");
+
+    // ✅ YAHAN CHANGE HAI — status wapas 'approved', leader clear
+    $stmt = $db->prepare("UPDATE projects SET status = 'approved', assigned_leader = NULL, assigned_team = NULL, rejected_reason = ? WHERE uid = ? AND assigned_leader = ? AND status = 'assigned'");
     $stmt->execute([$reason, $projectId, $user['uid']]);
 
     // Notification
@@ -615,6 +617,8 @@ function formatProject($p, $user) {
         'acceptedAt' => $p['accepted_at'],
         'rejectedReason' => $p['rejected_reason'],
         'workOrderNumber' => $p['work_order_number'],
+        'phoneNumber'    => $p['phone_number'] ?? '',
+        'pinLocation'    => $p['pin_location'] ?? '',
         'quotationFile' => $quotationFile,
         'quotationPlanningFile' => $quotationPlanningFile,
         'voiceNote' => $voiceNote,

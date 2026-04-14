@@ -157,24 +157,31 @@ function completeStep($user) {
        ->execute([$projectId, $stepNumber]);
 
     // --- Unlock next step logic ---
-    if ($step['step_type'] === 'main' && $stepNumber < 8) {
-        // Main steps 1-7: unlock next main step
-        $db->prepare("UPDATE project_steps SET is_locked = 0 WHERE project_id = ? AND step_number = ?")
-           ->execute([$projectId, $stepNumber + 1]);
-    } elseif ($stepNumber === 7) {
-        // Step 7 done: unlock Execution (8) AND all sub-steps (9-16)
-        $db->prepare("UPDATE project_steps SET is_locked = 0 WHERE project_id = ? AND step_number >= 8 AND step_number <= 16")
+    
+    if ($stepNumber === 7) {
+        // Step 7 pehle check karo — Execution (8) + sab sub-steps (9-16) unlock
+        $db->prepare("UPDATE project_steps SET is_locked = 0 
+                      WHERE project_id = ? AND step_number >= 8 AND step_number <= 16")
            ->execute([$projectId]);
+    
+    } elseif ($step['step_type'] === 'main' && $stepNumber < 7) {
+        // Steps 1-6: sirf agla main step unlock karo
+        $db->prepare("UPDATE project_steps SET is_locked = 0 
+                      WHERE project_id = ? AND step_number = ?")
+           ->execute([$projectId, $stepNumber + 1]);
+    
     } elseif ($step['step_type'] === 'sub') {
-        // Sub-step done: check if ALL sub-steps (9-16) are completed
-        $doneSubStmt = $db->prepare("SELECT COUNT(*) as cnt FROM project_steps WHERE project_id = ? AND step_number BETWEEN 9 AND 16 AND status IN ('completed','approved')");
+        // Sub-step done: check karo sab 8 sub-steps complete hue?
+        $doneSubStmt = $db->prepare("SELECT COUNT(*) as cnt FROM project_steps 
+                                      WHERE project_id = ? AND step_number BETWEEN 9 AND 16 
+                                      AND status IN ('completed','approved')");
         $doneSubStmt->execute([$projectId]);
         if ($doneSubStmt->fetch()['cnt'] >= 8) {
-            // All sub-steps done: mark Execution (8) as completed
-            $db->prepare("UPDATE project_steps SET status = 'completed', completed_at = NOW() WHERE project_id = ? AND step_number = 8")
+            $db->prepare("UPDATE project_steps SET status = 'completed', completed_at = NOW() 
+                          WHERE project_id = ? AND step_number = 8")
                ->execute([$projectId]);
-            // Mark project complete
-            $db->prepare("UPDATE projects SET status = 'completed' WHERE uid = ?")->execute([$projectId]);
+            $db->prepare("UPDATE projects SET status = 'completed' WHERE uid = ?")
+               ->execute([$projectId]);
         }
     }
 

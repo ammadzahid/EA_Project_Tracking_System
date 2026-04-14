@@ -18,10 +18,10 @@ export function SellingDashboard({ user }: Props) {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  const [form, setForm] = useState({
-    name: '', location: '', city: '', budget: 0,
-    capacity: '', projectType: 'Residential' as Project['projectType'],
-    deadline: '', description: ''
+  const [form, setForm] = useState({ name: '', location: '', city: '', budget: 0, capacity: '',
+    projectType: 'Residential', deadline: '', description: '',
+    phoneNumber: '', pinLocation: '' 
+      
   });
   const [quotationAdminFile, setQuotationAdminFile] = useState<File | null>(null);
   const [quotationAdminPreview, setQuotationAdminPreview] = useState<string>('');
@@ -79,6 +79,8 @@ export function SellingDashboard({ user }: Props) {
     fd.append('city', form.city);
     fd.append('budget', form.budget.toString());
     fd.append('capacity', form.capacity);
+    if (form.phoneNumber) fd.append('phoneNumber', form.phoneNumber);
+    if (form.pinLocation) fd.append('pinLocation', form.pinLocation);
     fd.append('projectType', form.projectType);
     fd.append('deadline', form.deadline);
     fd.append('description', form.description);
@@ -89,7 +91,7 @@ export function SellingDashboard({ user }: Props) {
     if (result.success) {
       await loadData();
       setShowForm(false);
-      setForm({ name: '', location: '', city: '', budget: 0, capacity: '', projectType: 'Residential', deadline: '', description: '' });
+      setForm({ name: '', location: '', city: '', budget: 0, capacity: '', projectType: 'Residential', deadline: '', description: '', phoneNumber: '', pinLocation: '' });
       setQuotationAdminFile(null); setQuotationAdminPreview('');
       setQuotationPlanningFile(null); setQuotationPlanningPreview('');
     } else {
@@ -189,6 +191,15 @@ export function SellingDashboard({ user }: Props) {
                     <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{p.city}</span>
                     <span className="flex items-center gap-1"><Zap className="w-3 h-3" />{p.capacity}</span>
                     <span className="flex items-center gap-1"><DollarSign className="w-3 h-3" />PKR {p.budget.toLocaleString()}</span>
+                    {p.phoneNumber && (
+                      <span className="text-xs text-slate-500">📞 {p.phoneNumber}</span>
+                    )}
+                    {p.pinLocation && (
+                      <a href={p.pinLocation} target="_blank" rel="noopener noreferrer"
+                         className="text-xs text-blue-500 hover:underline">
+                        📍 View Location
+                      </a>
+                    )}
                     <span className="flex items-center gap-1"><Building2 className="w-3 h-3" />{p.projectType}</span>
                   </div>
                   <div className="flex items-center gap-3 mt-1.5">
@@ -287,6 +298,33 @@ export function SellingDashboard({ user }: Props) {
                 <div><label className="text-sm font-medium text-slate-700 mb-1 block">Capacity <span className="text-red-500">*</span></label>
                   <input type="text" value={form.capacity} onChange={e => setForm({...form, capacity: e.target.value})} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="10kW" required /></div>
               </div>
+              {/* Phone Number + Pin Location */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-slate-700 mb-1 block">
+                      📞 Phone Number
+                    </label>
+                    <input
+                      type="tel"
+                      value={form.phoneNumber}
+                      onChange={e => setForm({...form, phoneNumber: e.target.value})}
+                      className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      placeholder="e.g. 0300-1234567"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-slate-700 mb-1 block">
+                      📍 Pin Location (Google Maps Link)
+                    </label>
+                    <input
+                      type="url"
+                      value={form.pinLocation}
+                      onChange={e => setForm({...form, pinLocation: e.target.value})}
+                      className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      placeholder="https://maps.google.com/..."
+                    />
+                  </div>
+                </div>
               <div className="grid grid-cols-2 gap-4">
                 <div><label className="text-sm font-medium text-slate-700 mb-1 block">Type</label>
                   <select value={form.projectType} onChange={e => setForm({...form, projectType: e.target.value as Project['projectType']})} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm">

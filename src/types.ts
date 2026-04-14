@@ -109,6 +109,8 @@ export interface Project {
   projectType: 'Residential' | 'Commercial' | 'Industrial' | 'Agricultural';
   deadline: string;
   description: string;
+  phoneNumber?: string;    
+  pinLocation?: string; 
   status: 'new' | 'approved' | 'assigned' | 'accepted' | 'in_progress' | 'completed' | 'rejected';
   createdBy: string;
   createdAt: string;

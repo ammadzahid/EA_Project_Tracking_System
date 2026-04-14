@@ -70,6 +70,7 @@ export function PlanningDashboard({ user: _user }: Props) {
 
   useEffect(() => { loadData(); }, []);
 
+  // Leader reject kiye projects bhi approved status pe wapas aate hain
   const approvedProjects = projects.filter(p => p.status === 'approved' && !p.assignedLeader);
   const assignedProjects = projects.filter(p => p.assignedLeader);
   const allActiveProjects = projects.filter(p => p.status !== 'new' && p.status !== 'rejected');
@@ -90,20 +91,28 @@ export function PlanningDashboard({ user: _user }: Props) {
     setStepDeadlines({});
   };
 
-  const handleConfirmAssign = async () => {
-    if (!assignModal) return;
-    setAssigning(true);
-    await assignProjectAsync(assignModal.project.id, assignModal.leader.id);
-    // Set deadlines for steps that have a date entered
-    const deadlineEntries = Object.entries(stepDeadlines).filter(([, d]) => d);
-    for (const [stepNum, deadline] of deadlineEntries) {
-      await setStepDeadlineAsync(assignModal.project.id, parseInt(stepNum), deadline);
-    }
-    setAssignModal(null);
-    setStepDeadlines({});
-    setAssigning(false);
-    await loadData();
-  };
+    // ✅ THEEK CODE (PlanningDashboard.tsx)
+    const handleConfirmAssign = async () => {
+        if (!assignModal) return;
+        setAssigning(true);
+        
+        // 1. Pehle project assign karo
+        await assignProjectAsync(assignModal.project.id, assignModal.leader.id);
+        
+        // 2. Deadlines save karo (state clear se pehle local copy lo)
+        const deadlineEntries = Object.entries(stepDeadlines).filter(([, d]) => d);
+        await Promise.all(  // ← sequential ki jagah parallel (faster)
+            deadlineEntries.map(([stepNum, deadline]) =>
+                setStepDeadlineAsync(assignModal.project.id, parseInt(stepNum), deadline)
+            )
+        );
+        
+        // 3. Ab modal close karo
+        setAssignModal(null);
+        setStepDeadlines({});
+        setAssigning(false);
+        await loadData();
+    };
 
   const handleApproveStepFile = async (fileId: string) => {
     if (!confirm('APPROVE this file? This action is final.')) return;
@@ -566,12 +575,14 @@ export function PlanningDashboard({ user: _user }: Props) {
                     {s.step}
                   </div>
                   <span className="flex-1 text-sm text-slate-700 font-medium">{s.name}</span>
-                  <input
-                    type="date"
-                    value={stepDeadlines[s.step] || ''}
-                    onChange={e => setStepDeadlines(prev => ({ ...prev, [s.step]: e.target.value }))}
-                    className="text-xs border border-slate-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-purple-400 w-36 flex-shrink-0"
-                  />
+                    <input
+                        type="date"
+                        min={new Date().toISOString().split('T')[0]}  // ← aaj se pehle select na ho
+                        value={stepDeadlines[s.step] || ''}
+                        onChange={e => setStepDeadlines(prev => ({ ...prev, [s.step]: e.target.value }))}
+                        className="text-xs border border-slate-200 rounded-lg px-2 py-1.5 
+                                   focus:outline-none focus:ring-2 focus:ring-purple-400 w-36 flex-shrink-0"
+                    />
                 </div>
               ))}
             </div>

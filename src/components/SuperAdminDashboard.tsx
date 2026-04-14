@@ -202,6 +202,7 @@ export function SuperAdminDashboard({ user: _user }: Props) {
       deadline: project.deadline, 
       description: project.description,
     });
+    setShowProjectModal(true);
   };
 
   const handleSaveEditProject = async () => {
@@ -427,6 +428,8 @@ export function SuperAdminDashboard({ user: _user }: Props) {
             statusColor={statusColor}
             downloadFile={downloadFile}
             viewFile={viewFile}
+            viewProjectPDF={viewProjectPDF}
+            generateProjectPDF={generateProjectPDF}
           />
         )}
 
@@ -618,7 +621,7 @@ function TabNavigation({ activeTab, setActiveTab, pendingUsers, unreadNotifs }: 
 }
 
 // Projects Tab Component
-function ProjectsTab({ projects, pageSize, onApprove, onReject, onEdit, onView, onBoqEdit, onNewProject, onDelete, statusColor, downloadFile, viewFile }: any) {
+function ProjectsTab({ projects, pageSize, onApprove, onReject, onEdit, onView, onBoqEdit, onNewProject, onDelete, statusColor, downloadFile, viewFile, viewProjectPDF, generateProjectPDF }: any) {
   const [statusFilter, setStatusFilter] = useState<'all' | 'new' | 'approved' | 'assigned' | 'accepted' | 'in_progress' | 'completed' | 'rejected'>('all');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
@@ -732,7 +735,7 @@ function ProjectsTab({ projects, pageSize, onApprove, onReject, onEdit, onView, 
       ) : (
         <div className="space-y-3">
           {paginated.map((project: Project) => (
-            <ProjectCard key={project.id} project={project} onApprove={onApprove} onReject={onReject} onEdit={onEdit} onView={onView} onBoqEdit={onBoqEdit} onDelete={onDelete} statusColor={statusColor} downloadFile={downloadFile} viewFile={viewFile} />
+            <ProjectCard key={project.id} project={project} onApprove={onApprove} onReject={onReject} onEdit={onEdit} onView={onView} onBoqEdit={onBoqEdit} onDelete={onDelete} statusColor={statusColor} downloadFile={downloadFile} viewFile={viewFile} viewProjectPDF={viewProjectPDF} generateProjectPDF={generateProjectPDF} />
           ))}
         </div>
       )}
@@ -803,7 +806,7 @@ function ProjectCard({ project, onApprove, onReject, onEdit, onView, onBoqEdit, 
           )}
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-1.5 flex-wrap justify-end">
           {project.status === 'new' && (
             <>
               <button
@@ -899,11 +902,10 @@ function ProjectCard({ project, onApprove, onReject, onEdit, onView, onBoqEdit, 
           </button>
 
           <button
-            onClick={() => onDelete(project)}
-            className="flex items-center gap-1 px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-sm font-medium hover:bg-red-100 border border-red-200"
-            title="Delete Project"
-          >
-            <Trash2 className="w-3.5 h-3.5" /> Delete
+              onClick={() => onDelete(project)}
+              className="p-2 hover:bg-red-50 rounded-lg border border-red-200"
+              title="Delete Project">
+              <Trash2 className="w-4 h-4 text-red-600" />
           </button>
         </div>
       </div>
