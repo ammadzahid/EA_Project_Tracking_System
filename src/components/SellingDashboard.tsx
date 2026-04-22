@@ -388,6 +388,8 @@ export function SellingDashboard({ user }: Props) {
               <div><p className="text-slate-500">Deadline</p><p className="font-medium">{new Date(viewProject.deadline).toLocaleDateString()}</p></div>
               <div><p className="text-slate-500">Status</p><span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${statusColor[viewProject.status]}`}>{viewProject.status.replace('_',' ').toUpperCase()}</span></div>
               {viewProject.workOrderNumber && <div><p className="text-slate-500">Work Order</p><p className="font-medium font-mono">{viewProject.workOrderNumber}</p></div>}
+              {viewProject.phoneNumber && <div><p className="text-slate-500">📞 Phone Number</p><p className="font-medium">{viewProject.phoneNumber}</p></div>}
+              {viewProject.pinLocation && <div><p className="text-slate-500">📍 Pin Location</p><a href={viewProject.pinLocation} target="_blank" rel="noopener noreferrer" className="font-medium text-blue-600 hover:underline">View on Map</a></div>}
             </div>
             <div className="bg-slate-50 rounded-xl p-3">
               <p className="text-xs text-slate-500 mb-1 font-medium">📝 Description</p>
